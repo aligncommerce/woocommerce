@@ -7,7 +7,7 @@
 - Author URI: https://aligncommerce.com
 - License: GPLv2
 
-# Description 
+# Description  
 
 The Align Commerce payment gateway for Woocommerce will allow you to accept payments on your Woocommerce installation in the form of local currency via bank transfers and/or via Bitcoin
 
