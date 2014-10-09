@@ -6,10 +6,16 @@ The Align Commerce payment gateway for Woocommerce will allow you to accept paym
 ==== Align Commerce Payment Gateway for Woocommerce ====
 
 Plugin Name: Woocommerce - Align Commerce Payment Gateway
+
+
 Plugin URI: https://aligncommerce.com/docs/libraries-plugins-ecommerce-websites/#plugins-woocommerce
+
 Version: 1.0.0
+
 Author: Align Commerce Corporation
+
 Author URI: https://aligncommerce.com
+
 License: GPLv2
 
 == Description ==
