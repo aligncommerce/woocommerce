@@ -29,7 +29,9 @@ You will need to generate your API keys - https://aligncommerce.com/dashboard/ke
 After generating the API keys, you need to set the IPN and Return Urls.
 
 Set your return URL and IPN URL to the following format. 
+
 Return URL: http://yoursite.com/wc-api/wc_aligncom_bank_transfer/
+
 IPN URL: http://yoursite.com/wc-api/wc_aligncom_bank_transfer/
 
 You will also need your Align Commerce dashboard email and password on your plugin settings
