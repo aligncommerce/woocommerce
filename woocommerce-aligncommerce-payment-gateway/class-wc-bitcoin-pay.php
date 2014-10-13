@@ -304,10 +304,12 @@ class WC_Aligncom_Bitcoin_Pay extends WC_Payment_Gateway {
         $i=0;
         foreach($line_items as $item)
         {
+             
              if($i==0){$shipping_cost=$shipping_cost;}
              else{$shipping_cost=0;}
              $product = new WC_Product( $item['product_id'] );
              $price = $product->price;
+             $tax+=$item['line_subtotal_tax'];
            $productAry[]= array(
                     'product_name' => $item['name'],
                     'product_price' => $price,
@@ -315,6 +317,26 @@ class WC_Aligncom_Bitcoin_Pay extends WC_Payment_Gateway {
                     'product_shipping' => $shipping_cost);
                     $i++;
                    
+        }
+        $tax=round($order->get_total_tax(),2) ;
+        if($tax>0 &&  'no' === get_option( 'woocommerce_prices_include_tax' ) && 'yes' === get_option( 'woocommerce_calc_taxes' ))
+        {
+        $productAry[]= array(
+                    'product_name' => 'Tax Amount',
+                    'product_price' => $tax,
+                    'quantity' => 1,
+                    'product_shipping' => 0);
+        }
+        $discount1=round( $order->get_order_discount(), 2 );
+         $discount2=round($order->get_cart_discount(),2);
+         $discount=$discount1+$discount2;
+        if($discount>0)
+        {
+        $productAry[]= array(
+                    'product_name' => 'Discount',
+                    'product_price' => -($discount),
+                    'quantity' => 1,
+                    'product_shipping' => 0);
         }
          $invoice_post =  array(
         'access_token' => $access_token,
@@ -406,6 +428,10 @@ class WC_Aligncom_Bitcoin_Pay extends WC_Payment_Gateway {
          $order       = wc_get_order( $order_id ); */
          
         //$ipn_response = ! empty( $_POST ) ? $_POST : true;
+       
+        $order_id=$ipn_response['order_id'];
+               $status=$ipn_response['status'];
+               $order       = wc_get_order( $order_id);
          if($ipn_response['checkout_type']=='btc')
          {
              switch($ipn_response['status'])
@@ -431,7 +457,7 @@ class WC_Aligncom_Bitcoin_Pay extends WC_Payment_Gateway {
                   $return_url= $order->get_cancel_order_url();
                 break;
                 
-            }
+            } 
             echo  $return_url;
             exit;
          }

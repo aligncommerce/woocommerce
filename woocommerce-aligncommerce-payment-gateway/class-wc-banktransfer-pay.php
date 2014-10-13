@@ -270,14 +270,17 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
         $line_items = $order->get_items(); 
         $productAry=array();
         $i=0;
+        $tax=0;
+         //debugbreak();
         
         foreach($line_items as $item)
         {
-            
+             
              if($i==0){$shipping_cost=$shipping_cost;}
              else{$shipping_cost=0;}
              $product = new WC_Product( $item['product_id'] );
              $price = $product->price;
+             $tax+=$item['line_subtotal_tax'];
            $productAry[]= array(
                     'product_name' => $item['name'],
                     'product_price' => $price,
@@ -286,6 +289,28 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
                     $i++;
                    
         }
+        $tax=round($order->get_total_tax(),2) ;
+        if($tax>0 &&  'no' === get_option( 'woocommerce_prices_include_tax' ) && 'yes' === get_option( 'woocommerce_calc_taxes' ))
+        {
+        $productAry[]= array(
+                    'product_name' => 'Tax Amount',
+                    'product_price' => $tax,
+                    'quantity' => 1,
+                    'product_shipping' => 0);
+        }
+         $discount1=round( $order->get_order_discount(), 2 );
+         $discount2=round($order->get_cart_discount(),2);
+         $discount=$discount1+$discount2;
+        if($discount>0)
+        {
+        $productAry[]= array(
+                    'product_name' => 'Discount',
+                    'product_price' => -($discount),
+                    'quantity' => 1,
+                    'product_shipping' => 0);
+        }
+      
+        
        
          $invoice_post =  array(
         'access_token' => $access_token,
@@ -330,7 +355,7 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
             break;
             
         }
-       
+       // die();
         curl_close ($curl1);
         $invoice_post='';
    
@@ -376,7 +401,7 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
          global $woocommerce;
           $ipn_response=$_REQUEST;
           write_log_data($ipn_response); 
-         
+          //  $ipn_response=array('checkout_type'=>'bank_transfer','status'=>'success','order_id'=>'75');
          if($ipn_response['checkout_type']=='btc')
          {
              
@@ -407,6 +432,7 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
                 break;
                 
             }
+            
             echo  $return_url;
             exit;
          }
@@ -433,6 +459,7 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
                    $return_url=  $order->get_cancel_order_url() ;
                }
               //  wp_redirect( $return_url);
+              
               echo   $return_url;
               exit;
          }  
