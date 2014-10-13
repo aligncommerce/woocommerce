@@ -266,18 +266,15 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
         
         //Create invoice
         
-        $shipping_cost=$order->get_total_shipping() + $order->get_shipping_tax();
+         $shipping_cost=$order->get_total_shipping();
         $line_items = $order->get_items(); 
         $productAry=array();
         $i=0;
-        $tax=0;
-         //debugbreak();
-        
         foreach($line_items as $item)
         {
              
-             if($i==0){$shipping_cost=$shipping_cost;}
-             else{$shipping_cost=0;}
+             /*if($i==0){$shipping_cost=$shipping_cost;}
+             else{$shipping_cost=0;}*/
              $product = new WC_Product( $item['product_id'] );
              $price = $product->price;
              $tax+=$item['line_subtotal_tax'];
@@ -285,9 +282,17 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
                     'product_name' => $item['name'],
                     'product_price' => $price,
                     'quantity' => $item['qty'],
-                    'product_shipping' => $shipping_cost);
+                    'product_shipping' => 0);
                     $i++;
                    
+        }
+        if($shipping_cost>0)
+        {
+            $productAry[]= array(
+                        'product_name' => 'Total Shipping',
+                        'product_price' => 0,
+                        'quantity' => 1,
+                        'product_shipping' => round($shipping_cost,2));
         }
         $tax=round($order->get_total_tax(),2) ;
         if($tax>0 &&  'no' === get_option( 'woocommerce_prices_include_tax' ) && 'yes' === get_option( 'woocommerce_calc_taxes' ))
