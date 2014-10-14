@@ -21,7 +21,7 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
         $this->has_fields     = false;
         $this->method_title   = __( 'Pay with Bank Transfer', 'woocommerce' );
        
-         $this->notify_url           = WC()->api_request_url( 'WC_Aligncom_Bitcoin_Pay' );
+        
          $this->invoice_url   = 'https://api.aligncommerce.com/invoice';
         $this->access_token_url  = 'https://api.aligncommerce.com/oauth/access_token';
           $this->currency_url='https://api.aligncommerce.com/currency';
@@ -70,7 +70,7 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
      */
     function is_valid_for_use_bank()
     {
-         if($_GET['section']=='wc_aligncom_bank_transfer')
+         if(strtolower($_GET['section'])=='wc_aligncom_bank_transfer')
          {
         //$bitObject=new WC_Aligncom_Bitcoin_Pay();
         if($this->al_username!='')
@@ -142,7 +142,15 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
     public function init_form_fields() {
     	global $woocommerce;
 
-    	$woocommerce_countries = apply_filters( 'woocommerce_countries', include( WC()->plugin_path() . '/i18n/countries.php' ) );;
+    	if(file_exists(dirname( plugin_basename( __FILE__ ) ) .  '/i18n/countries.php' ))
+        {
+            $woocommerce_countries = apply_filters( 'woocommerce_countries', include( dirname( plugin_basename( __FILE__ ) ) .  '/i18n/countries.php' ) );
+        }
+        else
+        {
+            $woocommerce_countries=($woocommerce->countries);
+            $woocommerce_countries=$woocommerce_countries->countries;
+        }
 
          
 			
@@ -227,8 +235,10 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
 
     /* Process the payment and return the result. */
 	function process_payment ($order_id) {
+          
 		global $woocommerce;
-          $order       = wc_get_order( $order_id );                           
+        $order = new WC_Order( $order_id );
+          //$order       = wc_get_order( $order_id );                           
         $bitObject=new WC_Aligncom_Bitcoin_Pay();
         
 		$post = array(
@@ -238,7 +248,7 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
             'scope' => 'products,invoice,buyer'
         );
 
-   
+ 
 
         $curl   = curl_init();
         curl_setopt($curl, CURLOPT_URL,$this->access_token_url);
@@ -262,11 +272,12 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
         $access_token = $response['access_token'];
         curl_close ($curl);
        
-
+    
         
         //Create invoice
-        
-         $shipping_cost=$order->get_total_shipping();
+        //debugbreak();
+         //$shipping_cost=$order->get_total_shipping();
+         $shipping_cost=$order->get_shipping();
         $line_items = $order->get_items(); 
         $productAry=array();
         $i=0;
@@ -280,7 +291,8 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
              $tax+=$item['line_subtotal_tax'];
            $productAry[]= array(
                     'product_name' => $item['name'],
-                    'product_price' => $price,
+                    //'product_price' => $price,
+                    'product_price' => $order->get_item_subtotal( $item, false ),
                     'quantity' => $item['qty'],
                     'product_shipping' => 0);
                     $i++;
@@ -294,8 +306,11 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
                         'quantity' => 1,
                         'product_shipping' => round($shipping_cost,2));
         }
-        $tax=round($order->get_total_tax(),2) ;
-        if($tax>0 &&  'no' === get_option( 'woocommerce_prices_include_tax' ) && 'yes' === get_option( 'woocommerce_calc_taxes' ))
+        //$tax1=$order->get_shipping_tax()+$order->get_total_tax();
+        $tax1=$order->get_shipping_tax()+$tax;
+        $tax=round($tax1,2) ;
+       // echo $order->get_total();
+        if($tax>0  && 'yes' === get_option( 'woocommerce_calc_taxes' ))
         {
         $productAry[]= array(
                     'product_name' => 'Tax Amount',
@@ -381,7 +396,7 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
 
 		    // Reduce stock levels
 		    $order->reduce_order_stock();
-             WC()->cart->empty_cart();
+             //WC()->cart->empty_cart();
 		   // Return thankyou redirect
 		    return array(
 			    'result' 	=> 'success',
