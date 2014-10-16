@@ -1,4 +1,4 @@
-===  Woocommerce - Accept Bitcoin and Payin Local Gateway by Align Commerce  ===
+#===  Woocommerce - Accept Bitcoin and Payin Local Gateway by Align Commerce  ===
 Contributors: aligncommerce
 Tags: woocommerce, bitcoin, payments, euro, web payments, gateway
 Requires at least: 3.0.1
@@ -9,7 +9,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 The AC payment gateway will allow you to accept payments on your Woocommerce installation in local currency via bank transfers and/or via Bitcoin
 
-== Description ==
+#== Description ==
 
 AcceptBitcoin
 
@@ -19,7 +19,7 @@ PayinLocal
 
 Whether it be a merchant in the United States accepting Euros from a website visitor in Germany or a small Philippine consulting firm invoicing for services provided in the US, our PayinLocal platform automatically converts foreign currencies to your local currency. Align Commerce utilizes the transmission technology behind the most popular and efficient cryptocurrencies such as Bitcoin allowing you to receive international payments to your bank account in a seamless and inexpensive manner.
 
-== Installation ==
+#== Installation ==
 
 Align Commerce Account Setup
 - You will need to generate your API keys 
@@ -38,17 +38,17 @@ Woocommerce Gateway Installation
 5. Open the settings page for WooCommerce and click the "Payment Gateways," tab.
 6. Configure your settings.
 
-== Frequently Asked Questions ==
+#== Frequently Asked Questions ==
 
 support@aligncommerce.com
 
-== Screenshots ==
+#== Screenshots ==
 
 1. Accept Bitcoin.
 2. Payin Local
 3. Align Commerce App Logo
 
-== Changelog ==
+#== Changelog ==
 
 = 1.0 =
 * Initial Release.
