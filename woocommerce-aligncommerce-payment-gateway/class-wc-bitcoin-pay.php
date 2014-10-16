@@ -23,7 +23,7 @@ class WC_Aligncom_Bitcoin_Pay extends WC_Payment_Gateway {
         $this->access_token_url  = 'https://api.aligncommerce.com/oauth/access_token';
           $this->currency_url='https://api.aligncommerce.com/currency';
        
-        $this->notify_url           = WC()->api_request_url( 'WC_Aligncom_Bitcoin_Pay' );
+        
 
         // Load the form fields.
         $this->init_form_fields();
@@ -108,7 +108,8 @@ class WC_Aligncom_Bitcoin_Pay extends WC_Payment_Gateway {
 
     /***check AC suppoerted currency**************/
     function is_valid_for_use_bitcoin() {
-        if($_GET['section']=='wc_aligncom_bitcoin_pay')
+       // debugbreak();
+        if(strtolower($_GET['section'])=='wc_aligncom_bitcoin_pay')
         {
             if($this->al_username!='')
             {
@@ -178,7 +179,15 @@ class WC_Aligncom_Bitcoin_Pay extends WC_Payment_Gateway {
     public function init_form_fields() {
     	global $woocommerce;
 
-    	$woocommerce_countries = apply_filters( 'woocommerce_countries', include( WC()->plugin_path() . '/i18n/countries.php' ) );;
+    	if(file_exists(dirname( plugin_basename( __FILE__ ) ) .  '/i18n/countries.php' ))
+        {
+            $woocommerce_countries = apply_filters( 'woocommerce_countries', include( dirname( plugin_basename( __FILE__ ) ) .  '/i18n/countries.php' ) );
+        }
+        else
+        {
+            $woocommerce_countries=($woocommerce->countries);
+            $woocommerce_countries=$woocommerce_countries->countries;
+        }
 			
         $this->form_fields = array(
             'enabled' => array(
@@ -261,7 +270,9 @@ class WC_Aligncom_Bitcoin_Pay extends WC_Payment_Gateway {
 
     /* Process the payment and return the result. */
 	function process_payment ($order_id) {
-       $order       = wc_get_order( $order_id );
+       //$order       = wc_get_order( $order_id );
+       global $woocommerce;
+        $order = new WC_Order( $order_id );
       
         $post = array(
             'grant_type' => 'client_credentials',
@@ -298,23 +309,56 @@ class WC_Aligncom_Bitcoin_Pay extends WC_Payment_Gateway {
         
         //Create invoice
         
-        $shipping_cost=$order->get_total_shipping() + $order->get_shipping_tax();
+       //$shipping_cost=$order->get_total_shipping();
+         $shipping_cost=$order->get_shipping();
         $line_items = $order->get_items(); 
         $productAry=array();
         $i=0;
         foreach($line_items as $item)
         {
-             if($i==0){$shipping_cost=$shipping_cost;}
-             else{$shipping_cost=0;}
-             $product = new WC_Product( $item['product_id'] );
+             
+             /*if($i==0){$shipping_cost=$shipping_cost;}
+             else{$shipping_cost=0;}*/
+              $product = new WC_Product( $item['product_id'] );
              $price = $product->price;
+             $tax+=$item['line_subtotal_tax'];
            $productAry[]= array(
                     'product_name' => $item['name'],
-                    'product_price' => $price,
+                    //'product_price' => $price,
+                    'product_price' => $order->get_item_subtotal( $item, false ),
                     'quantity' => $item['qty'],
-                    'product_shipping' => $shipping_cost);
+                    'product_shipping' => 0);
                     $i++;
-                   
+        }
+        if($shipping_cost>0)
+        {
+            $productAry[]= array(
+                        'product_name' => 'Total Shipping',
+                        'product_price' => 0,
+                        'quantity' => 1,
+                        'product_shipping' => round($shipping_cost,2));
+        }
+       //$tax1=$order->get_shipping_tax()+$order->get_total_tax();
+        $tax1=$order->get_shipping_tax()+$tax;
+        $tax=round($tax1,2) ;
+        if($tax>0  && 'yes' === get_option( 'woocommerce_calc_taxes' ))
+        {
+        $productAry[]= array(
+                    'product_name' => 'Tax Amount',
+                    'product_price' => $tax,
+                    'quantity' => 1,
+                    'product_shipping' => 0);
+        }
+        $discount1=round( $order->get_order_discount(), 2 );
+         $discount2=round($order->get_cart_discount(),2);
+         $discount=$discount1+$discount2;
+        if($discount>0)
+        {
+        $productAry[]= array(
+                    'product_name' => 'Discount',
+                    'product_price' => -($discount),
+                    'quantity' => 1,
+                    'product_shipping' => 0);
         }
          $invoice_post =  array(
         'access_token' => $access_token,
@@ -406,6 +450,10 @@ class WC_Aligncom_Bitcoin_Pay extends WC_Payment_Gateway {
          $order       = wc_get_order( $order_id ); */
          
         //$ipn_response = ! empty( $_POST ) ? $_POST : true;
+       
+        $order_id=$ipn_response['order_id'];
+               $status=$ipn_response['status'];
+               $order       = wc_get_order( $order_id);
          if($ipn_response['checkout_type']=='btc')
          {
              switch($ipn_response['status'])
@@ -431,7 +479,7 @@ class WC_Aligncom_Bitcoin_Pay extends WC_Payment_Gateway {
                   $return_url= $order->get_cancel_order_url();
                 break;
                 
-            }
+            } 
             echo  $return_url;
             exit;
          }
