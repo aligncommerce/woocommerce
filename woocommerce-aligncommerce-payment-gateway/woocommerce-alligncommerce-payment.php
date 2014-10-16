@@ -106,5 +106,16 @@ function write_log_data ( $data )  {
 }
 
 
-
+//add_action('woocommerce_order_items_table','ac_order_notes_show');
+add_action('woocommerce_order_details_after_order_table','ac_order_notes_show');
+function ac_order_notes_show($order)
+{
+    global $woocommerce;
+    $post_id=$order->id;
+    $ac_fail_msg=get_post_meta( $post_id, 'ac_fail_message' );
+    if($ac_fail_msg)
+    {
+        echo '<p class="order-info"><b>'.__('Order Note','woocommerce').' : </b> '.$ac_fail_msg[0].'<p>';
+    }
+}
 ?>
