@@ -421,7 +421,7 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
          global $woocommerce;
           $ipn_response=$_REQUEST;
           write_log_data($ipn_response); 
-          //  $ipn_response=array('checkout_type'=>'bank_transfer','status'=>'success','order_id'=>'75');
+           //$ipn_response=array('checkout_type'=>'bank_transfer','status'=>'cancel','order_id'=>'76');
          if($ipn_response['checkout_type']=='btc')
          {
              
@@ -430,25 +430,36 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
              $order       = wc_get_order( $order_id);
              switch($ipn_response['status'])
             {
-                case 'success':
-                $order->update_status('completed', __( 'Your order wont be shipped until the funds have cleared in our account.', 'woocommerce' ));
+                 case 'success':
+                $order->update_status('processing', __( 'Your order wont be shipped until the funds have cleared in our account.', 'woocommerce' ));
                 $order->reduce_order_stock();
-                // wp_redirect($this->get_return_url( $order )); 
+                delete_post_meta($order_id, 'ac_fail_message');
                  $return_url= $this->get_return_url( $order );    
                 break;
                 
                 case 'cancel':
-                $order->update_status('cancelled', __( 'Your order wont be shipped until the funds have cleared in our account.', 'woocommerce' ));
-                 // wc_add_notice( __( 'Alligncommerce Error : Your order was cancelled.', 'woocommerce' ) . $response['status']." - ".$err_msg, 'error' );
-                 // wp_redirect(esc_url( $order->get_cancel_order_url() ));
-                  $return_url= $order->get_cancel_order_url();
+                $order->update_status('cancelled', __( 'Order was canclled.', 'woocommerce' ));
+                 $return_url= $order->get_cancel_order_url();
+                 update_post_meta($order_id, 'ac_fail_message', $ipn_response['status_message']);
                 break;
                 
                 case 'fail':
-                $order->update_status('failed', __( 'Your order wont be shipped until the funds have cleared in our account.', 'woocommerce' ));
-                  //wc_add_notice( __( 'Alligncommerce Error : Your payment process was failed.', 'woocommerce' ) . $response['status']." - ".$err_msg, 'error' );
-                  //wp_redirect(esc_url( $order->get_cancel_order_url() ));
-                  $return_url= $order->get_cancel_order_url();
+                $order->update_status('failed', __( 'Order was failed.', 'woocommerce' ));
+                //$order->update_status('failed', __( 'This order is failed because an error.', 'woocommerce' ));
+                update_post_meta($order_id, 'ac_fail_message', $ipn_response['status_message']);
+                $return_url= $order->get_cancel_order_url();
+                break;
+                
+                case 'processing':
+                $order->update_status('pending', __( 'Your order wont be shipped until the funds have cleared in our account.', 'woocommerce' ));
+                 $return_url= $this->get_return_url( $order );
+                  delete_post_meta($order_id, 'ac_fail_message');
+                break;
+                
+                case 'refund':
+                $order->update_status('refunded', __( 'Order was refunded.', 'woocommerce' ));
+                $return_url=$this->get_return_url( $order );
+                 delete_post_meta($order_id, 'ac_fail_message');
                 break;
                 
             }
@@ -462,22 +473,41 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
              $order_id=$ipn_response['order_id'];
                $status=$ipn_response['status'];
                $order       = wc_get_order( $order_id);
-                if($status=='success')
-               { 
-                    $order->update_status('processing');
-                   $return_url=$this->get_return_url( $order );
-                 
-               }
-               else if($status=='cancel')
-               {
-                    $order->update_status('cancelled');
-                   $return_url=  $order->get_cancel_order_url() ;
-               }
-               else
-               {
-                    $order->update_status('failed');
-                   $return_url=  $order->get_cancel_order_url() ;
-               }
+               switch($ipn_response['status'])
+                {
+                    case 'success':
+                    $order->update_status('processing', __( 'Your order wont be shipped until the funds have cleared in our account.', 'woocommerce' ));
+                    $order->reduce_order_stock();
+                    delete_post_meta($order_id, 'ac_fail_message');
+                     $return_url= $this->get_return_url( $order );    
+                    break;
+                    
+                    case 'cancel':
+                    $order->update_status('cancelled', __( 'Order was canclled.', 'woocommerce' ));
+                     $return_url= $order->get_cancel_order_url();
+                     update_post_meta($order_id, 'ac_fail_message', $ipn_response['status_message']);
+                    break;
+                    
+                    case 'fail':
+                    $order->update_status('failed', __( 'Order was failed.', 'woocommerce' ));
+                    //$order->update_status('failed', __( 'This order is failed because an error.', 'woocommerce' ));
+                    update_post_meta($order_id, 'ac_fail_message', $ipn_response['status_message']);
+                    $return_url= $order->get_cancel_order_url();
+                    break;
+                    
+                    case 'processing':
+                    $order->update_status('pending', __( 'Your order wont be shipped until the funds have cleared in our account.', 'woocommerce' ));
+                    $return_url= $this->get_return_url( $order );
+                    delete_post_meta($order_id, 'ac_fail_message');
+                    break;
+                    
+                    case 'refund':
+                    $order->update_status('refunded', __( 'Order was refunded.', 'woocommerce' ));
+                    $return_url=$this->get_return_url( $order );
+                     delete_post_meta($order_id, 'ac_fail_message');
+                    break;
+                    
+                }
               //  wp_redirect( $return_url);
               
               echo   $return_url;
