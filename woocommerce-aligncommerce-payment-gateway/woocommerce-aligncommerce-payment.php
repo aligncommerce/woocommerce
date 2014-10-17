@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: Woocommerce Align Commerce Payment Gateway for Accept Bitcoin and Payin Local
+Plugin Name: Woocommerce - Accept Bitcoin and Payin Local Payment Gateway
 Plugin URI: https://aligncommerce.com
 Description: Add Align Commerce Payment Gateway for WooCommerce.
 Version: 1.0.0
