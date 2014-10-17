@@ -175,31 +175,31 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
                 'default' => __( 'Make your payment directly into our bank account.', 'woocommerce' )
             ),
             'api_key' => array(
-                'title'         => __( 'Alligncommerce API key', 'woocommerce' ),
+                'title'         => __( 'Align Commerce API key', 'woocommerce' ),
                 'type'             => 'text',
                 'default'         => '',
                 'description'     => __( 'Please add your API key here.', 'woocommerce' ),
                 'desc_tip'      => true,
             ),
             'api_secret' => array(
-                'title'         => __( 'Alligncommerce API Secret', 'woocommerce' ),
+                'title'         => __( 'Align Commerce API Secret', 'woocommerce' ),
                 'type'             => 'text',
                 'default'         => '',
                 'description'     => __( 'Please add your API Secret key here.', 'woocommerce' ),
                 'desc_tip'      => true,
             ),
             'al_username' => array(
-                'title'         => __( 'Alligncommerce Account Username', 'woocommerce' ),
+                'title'         => __( 'Align Commerce Account Username', 'woocommerce' ),
                 'type'             => 'text',
                 'default'         => '',
-                'description'     => __( 'Please add your alligncommerce username.', 'woocommerce' ),
+                'description'     => __( 'Please add your Align Commerce username.', 'woocommerce' ),
                 'desc_tip'      => true,
             ),
             'al_password' => array(
-                'title'         => __( 'Alligncommerce account password', 'woocommerce' ),
+                'title'         => __( 'Align Commerce account password', 'woocommerce' ),
                 'type'             => 'password',
                 'default'         => '',
-                'description'     => __( 'Please add your alligncommerce password.', 'woocommerce' ),
+                'description'     => __( 'Please add your Align Commerce password.', 'woocommerce' ),
                 'desc_tip'      => true,
             ),
             'enable_for_bank_countries' => array(
@@ -386,13 +386,13 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
                  $err_msg=implode("<br>",$response['error_message']);
              }
              else{$err_msg=$response['error_message'];}
-            wc_add_notice( __( 'Alligncommerce Error : ', 'woocommerce' ) . $response['status']." - ".$err_msg, 'error' );
+            wc_add_notice( __( 'Align Commerce Error : ', 'woocommerce' ) . $response['status']." - ".$err_msg, 'error' );
             return false;
          }
          else
          {
            // Mark as on-hold
-		    $order->update_status('pending', __( 'Your order wont be shipped until the funds have cleared in our account.', 'woocommerce' ));
+		    $order->update_status('pending', __( 'Your order wont be shipped until the funds have cleared on our account.', 'woocommerce' ));
 
 		    // Reduce stock levels
 		    $order->reduce_order_stock();
@@ -431,7 +431,7 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
              switch($ipn_response['status'])
             {
                  case 'success':
-                $order->update_status('processing', __( 'Your order wont be shipped until the funds have cleared in our account.', 'woocommerce' ));
+                $order->update_status('processing', __( 'Your order wont be shipped until the funds have cleared on our account.', 'woocommerce' ));
                 $order->reduce_order_stock();
                 delete_post_meta($order_id, 'ac_fail_message');
                  $return_url= $this->get_return_url( $order );    
@@ -451,7 +451,7 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
                 break;
                 
                 case 'processing':
-                $order->update_status('pending', __( 'Your order wont be shipped until the funds have cleared in our account.', 'woocommerce' ));
+                $order->update_status('pending', __( 'Your order wont be shipped until the funds have cleared on our account.', 'woocommerce' ));
                  $return_url= $this->get_return_url( $order );
                   delete_post_meta($order_id, 'ac_fail_message');
                 break;
@@ -476,7 +476,7 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
                switch($ipn_response['status'])
                 {
                     case 'success':
-                    $order->update_status('processing', __( 'Your order wont be shipped until the funds have cleared in our account.', 'woocommerce' ));
+                    $order->update_status('processing', __( 'Your order wont be shipped until the funds have cleared on our account.', 'woocommerce' ));
                     $order->reduce_order_stock();
                     delete_post_meta($order_id, 'ac_fail_message');
                      $return_url= $this->get_return_url( $order );    
@@ -496,7 +496,7 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
                     break;
                     
                     case 'processing':
-                    $order->update_status('pending', __( 'Your order wont be shipped until the funds have cleared in our account.', 'woocommerce' ));
+                    $order->update_status('pending', __( 'Your order wont be shipped until the funds have cleared on our account.', 'woocommerce' ));
                     $return_url= $this->get_return_url( $order );
                     delete_post_meta($order_id, 'ac_fail_message');
                     break;

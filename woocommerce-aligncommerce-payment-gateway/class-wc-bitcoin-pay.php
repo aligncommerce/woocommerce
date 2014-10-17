@@ -210,31 +210,31 @@ class WC_Aligncom_Bitcoin_Pay extends WC_Payment_Gateway {
                 'default' => __( 'We will redirect you to Aligncommerce Site.', 'woocommerce' )
             ),
 			'api_key' => array(
-				'title' 		=> __( 'Alligncommerce API key', 'woocommerce' ),
+				'title' 		=> __( 'Align Commerce API key', 'woocommerce' ),
 				'type' 			=> 'text',
 				'default' 		=> '',
 				'description' 	=> __( 'Please add your API key here.', 'woocommerce' ),
 				'desc_tip'      => true,
 			),
             'api_secret' => array(
-                'title'         => __( 'Alligncommerce API Secret', 'woocommerce' ),
+                'title'         => __( 'Align Commerce API Secret', 'woocommerce' ),
                 'type'             => 'text',
                 'default'         => '',
                 'description'     => __( 'Please add your API Secret key here.', 'woocommerce' ),
                 'desc_tip'      => true,
             ),
             'al_username' => array(
-                'title'         => __( 'Alligncommerce Account Username', 'woocommerce' ),
+                'title'         => __( 'Align Commerce Account Username', 'woocommerce' ),
                 'type'             => 'text',
                 'default'         => '',
-                'description'     => __( 'Please add your alligncommerce username.', 'woocommerce' ),
+                'description'     => __( 'Please add your Align Commerce username.', 'woocommerce' ),
                 'desc_tip'      => true,
             ),
             'al_password' => array(
-                'title'         => __( 'Alligncommerce account password', 'woocommerce' ),
+                'title'         => __( 'Align Commerce account password', 'woocommerce' ),
                 'type'             => 'password',
                 'default'         => '',
-                'description'     => __( 'Please add your alligncommerce password.', 'woocommerce' ),
+                'description'     => __( 'Please add your Align Commerce password.', 'woocommerce' ),
                 'desc_tip'      => true,
             ),
             'enable_for_bitcoin_countries' => array(
@@ -413,7 +413,7 @@ class WC_Aligncom_Bitcoin_Pay extends WC_Payment_Gateway {
                  $err_msg=implode("<br>",$response['error_message']);
              }
              else{$err_msg=$response['error_message'];}
-            wc_add_notice( __( 'Alligncommerce Error : ', 'woocommerce' ) . $response['status']." - ".$err_msg, 'error' );
+            wc_add_notice( __( 'Align Commerce Error : ', 'woocommerce' ) . $response['status']." - ".$err_msg, 'error' );
             return false;
          }
          else
@@ -467,14 +467,14 @@ class WC_Aligncom_Bitcoin_Pay extends WC_Payment_Gateway {
                 
                 case 'cancel':
                 $order->update_status('cancelled', __( 'Your order wont be shipped until the funds have cleared in our account.', 'woocommerce' ));
-                  wc_add_notice( __( 'Alligncommerce Error : Your order was cancelled.', 'woocommerce' ) . $response['status']." - ".$err_msg, 'error' );
+                  wc_add_notice( __( 'Align Commerce Error : Your order was cancelled.', 'woocommerce' ) . $response['status']." - ".$err_msg, 'error' );
                   wp_redirect(esc_url( $order->get_cancel_order_url() ));
                   $return_url= $order->get_cancel_order_url();
                 break;
                 
                 case 'fail':
                 $order->update_status('failed', __( 'Your order wont be shipped until the funds have cleared in our account.', 'woocommerce' ));
-                  wc_add_notice( __( 'Alligncommerce Error : Your payment process was failed.', 'woocommerce' ) . $response['status']." - ".$err_msg, 'error' );
+                  wc_add_notice( __( 'Align Commerce Error : Your payment process failed.', 'woocommerce' ) . $response['status']." - ".$err_msg, 'error' );
                   wp_redirect(esc_url( $order->get_cancel_order_url() ));
                   $return_url= $order->get_cancel_order_url();
                 break;

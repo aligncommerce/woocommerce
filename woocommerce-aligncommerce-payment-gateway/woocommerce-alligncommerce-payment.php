@@ -1,10 +1,10 @@
 <?php
 /*
-Plugin Name: Woocommerce Alligncommerce payment Gateways
+Plugin Name: Woocommerce Align Commerce Payment Gateway for Accept Bitcoin and Payin Local
 Plugin URI: https://aligncommerce.com
-Description: Add alligncommerce Payment Gateways for WooCommerce.
+Description: Add Align Commerce Payment Gateway for WooCommerce.
 Version: 1.0.0
-Author: Align Commerce
+Author: Align Commerce Corporation
 Author URI: https://aligncommerce.com
 License: GPLv2
 */
@@ -13,7 +13,7 @@ require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 
 /* WooCommerce fallback notice. */
 function woocommerce_btc_payment_fallback_notice() {
-    echo '<div class="error"><p>' . sprintf( __( 'WooCommerce Alligncommerce Payment Gateways depends on the last version of %s to work!', 'woocommerce' ), '<a href="http://wordpress.org/extend/plugins/woocommerce/">WooCommerce</a>' ) . '</p></div>';
+    echo '<div class="error"><p>' . sprintf( __( 'WooCommerce Align Commerce Payment Gateways depends on the last version of %s to work!', 'woocommerce' ), '<a href="http://wordpress.org/extend/plugins/woocommerce/">WooCommerce</a>' ) . '</p></div>';
 }
 
 if ( !function_exists('curl_init') ) 
