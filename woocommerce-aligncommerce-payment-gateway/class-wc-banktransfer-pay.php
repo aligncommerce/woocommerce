@@ -278,6 +278,7 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
         //debugbreak();
          //$shipping_cost=$order->get_total_shipping();
          $shipping_cost=$order->get_shipping();
+         //$shipping_cost=round( $order->get_total_shipping() + $order->get_shipping_tax(), 2 );
         $line_items = $order->get_items(); 
         $productAry=array();
         $i=0;
@@ -288,7 +289,9 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
              else{$shipping_cost=0;}*/
              $product = new WC_Product( $item['product_id'] );
              $price = $product->price;
+             if ( get_option( 'woocommerce_prices_include_tax' ) == 'yes' ) {
              $tax+=$item['line_subtotal_tax'];
+             }
            $productAry[]= array(
                     'product_name' => $item['name'],
                     //'product_price' => $price,
@@ -298,7 +301,7 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
                     $i++;
                    
         }
-        if($shipping_cost>0)
+       /* if($shipping_cost>0)
         {
             $productAry[]= array(
                         'product_name' => 'Total Shipping',
@@ -306,8 +309,12 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
                         'quantity' => 1,
                         'product_shipping' => round($shipping_cost,2));
         }
-        //$tax1=$order->get_shipping_tax()+$order->get_total_tax();
-        $tax1=$order->get_shipping_tax()+$tax;
+        if ( get_option( 'woocommerce_prices_include_tax' ) == 'yes' ) {
+            $tax=$tax;
+         $tax1=$order->get_shipping_tax()+$tax;}
+            else{$tax1=$order->get_total_tax();}
+        //$tax1=$order->get_shipping_tax()+;
+      
         $tax=round($tax1,2) ;
        // echo $order->get_total();
         if($tax>0  && 'yes' === get_option( 'woocommerce_calc_taxes' ))
@@ -328,27 +335,88 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
                     'product_price' => -($discount),
                     'quantity' => 1,
                     'product_shipping' => 0);
-        }
-      
+        }*/
         
+        global $woocommerce;
+
+        if(file_exists(dirname( plugin_basename( __FILE__ ) ) .  '/i18n/countries.php' ))
+        {
+            $woocommerce_countries = apply_filters( 'woocommerce_countries', include( dirname( plugin_basename( __FILE__ ) ) .  '/i18n/countries.php' ) );
+        }
+        else
+        {
+            $woocommerce_countries=($woocommerce->countries);
+            $woocommerce_countries=$woocommerce_countries->countries;
+        }
+        
+        $bill_states = $woocommerce->countries->get_states( $order->billing_country );
+         $ship_states = $woocommerce->countries->get_states( $order->shipping_country );
+        $discount1=round( $order->get_order_discount(), 2 );
+         $discount2=round($order->get_cart_discount(),2);
+         $discount=$discount1+$discount2;
+         
+         if ( get_option( 'woocommerce_prices_include_tax' ) == 'yes' ) {
+            $tax=$tax;
+         $tax1=$order->get_shipping_tax()+$tax;}
+         else{$tax1=$order->get_total_tax();}
+        //$tax1=$order->get_shipping_tax()+;
+         $tax=round($tax1,2) ;
+      
        
          $invoice_post =  array(
-        'access_token' => $access_token,
+            'access_token' => $access_token,
             'checkout_type' => 'bank_transfer',
-             'order_id'=>$order_id,
-             'order_id'=>$order_id,
-             //'currency' =>(get_woocommerce_currency()),
-              'currency_id'=>get_option('ac_currency_id_bank'),
-             'products' =>$productAry,
+            'order_id'=>$order_id,
+            'order_id'=>$order_id,
+            //'currency' =>(get_woocommerce_currency()),
+            'currency_id'=>get_option('ac_currency_id_bank'),
+            'products' =>$productAry,
             'buyer_info' => array(
-                'first_name' => $order->billing_first_name,
-                'last_name' => $order->billing_last_name,
-                'email' => $order->billing_email,
-                'address_1' => $order->billing_address_1,
-                'address_2' => $order->billing_address_2)
+                            'first_name' => $order->billing_first_name,
+                            'last_name' => $order->billing_last_name,
+                            'email' => $order->billing_email,
+                            'address_1' => $order->billing_address_1,
+                            'address_2' => $order->billing_address_2,
+                            'address_number' => "",
+                            'city' => $order->billing_city,
+                            'state' => $bill_states[$order->billing_state],
+                            'zip' => $order->billing_postcode,
+                            'country' => $woocommerce_countries[$order->billing_country],
+                            'phone' => $order->billing_phone),
+            'shipping' => array(
+                          'description' => 'Shipping',
+                          'amount' => round($shipping_cost,2)
+                             ),
+             'shipping_address' => array(
+                            'first_name' => $order->shipping_first_name,
+                            'last_name' => $order->shipping_last_name,
+                            'email' => $order->billing_email,
+                            'address_1' => $order->shipping_address_1,
+                            'address_2' => $order->shipping_address_2,
+                            'address_number' => "",
+                            'city' => $order->shipping_city,
+                            'state' => $ship_states[$order->shipping_state],
+                            'zip' => $order->shipping_postcode,
+                            'country' => $woocommerce_countries[$order->shipping_country],
+                            'phone' => $order->billing_phone)
         );
+        if($tax>0)
+        {
+               $invoice_post['tax_rate']= array(
+                  'description' => 'Tax',
+                  //'percent' => '',
+                  'amount' => $tax);
+        }
+        if($discount>0)
+        {
+             $invoice_post['discount']= array(
+                          'description' => 'Discount',
+                          //'percent_off' => '',
+                          'amount_off' => $discount);
+        }
 
-        //mail('chaitali@pm.biztechconsultancy.com','invoice',print_r($invoice_post,true));
+        /*mail('chaitali@pm.biztechconsultancy.com','ac_invoice_post',print_r($invoice_post,true));
+         write_log_data($invoice_post); */
         $curl1   = curl_init($this->invoice_url);
         curl_setopt($curl1, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
         curl_setopt($curl1, CURLOPT_USERPWD, $this->al_username.":" . $this->al_password);
@@ -421,6 +489,7 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
          global $woocommerce;
           $ipn_response=$_REQUEST;
           write_log_data($ipn_response); 
+           //mail('chaitali@pm.biztechconsultancy.com','bank_woo',print_r($ipn_response,true));
            //$ipn_response=array('checkout_type'=>'bank_transfer','status'=>'cancel','order_id'=>'76');
          if($ipn_response['checkout_type']=='btc')
          {
@@ -473,6 +542,7 @@ class WC_Aligncom_Bank_Transfer extends WC_Payment_Gateway {
              $order_id=$ipn_response['order_id'];
                $status=$ipn_response['status'];
                $order       = wc_get_order( $order_id);
+              
                switch($ipn_response['status'])
                 {
                     case 'success':
